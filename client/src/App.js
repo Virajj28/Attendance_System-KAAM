@@ -1,25 +1,50 @@
-// import logo from './logo.svg';
-import './App.css';
+import {
+  BrowserRouter as Router,
+  Routes,
+  Route,
+  Navigate,
+} from "react-router-dom";
+import { useEffect, useState } from "react";
+import Login from "./pages/Login";
+import Signup from "./pages/Signup";
+import Dashboard from "./pages/Dashboard";
+import AdminDashboard from "./pages/AdminDashboard";
 
 function App() {
+  const [userRole, setUserRole] = useState(localStorage.getItem("role"));
+
+  useEffect(() => {
+    const handleStorageChange = () => {
+      setUserRole(localStorage.getItem("role")); // Update role when storage changes
+    };
+
+    window.addEventListener("storage", handleStorageChange); // Listen for storage changes
+    return () => window.removeEventListener("storage", handleStorageChange);
+  }, []);
+
   return (
-    <div className="App">
-      <header className="App-header">
-        {/* <img src={logo} className="App-logo" alt="logo" /> */}
-        <p>
-          Attendance System
-          {/* Edit <code>src/App.js</code> and save to reload. */}
-        </p>
-        {/* <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a> */}
-      </header>
-    </div>
+    <Router>
+      <Routes>
+        <Route path="/" element={<Login setUserRole={setUserRole} />} />
+        <Route path="/signup" element={<Signup />} />
+        <Route
+          path="/dashboard"
+          element={
+            userRole === "admin" ? <Navigate to="/admin" /> : <Dashboard />
+          }
+        />
+        <Route
+          path="/admin"
+          element={
+            userRole === "admin" ? (
+              <AdminDashboard />
+            ) : (
+              <Navigate to="/dashboard" />
+            )
+          }
+        />
+      </Routes>
+    </Router>
   );
 }
 
