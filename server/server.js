@@ -3,6 +3,8 @@ const mongoose = require("mongoose");
 const cors = require("cors");
 const dotenv = require("dotenv");
 const authRoutes = require("./routes/authRoutes");
+const dashboardRoutes = require("./routes/dashboardRoutes");
+const attendanceRoutes = require("./routes/attendanceRoutes");
 
 dotenv.config();
 const app = express();
@@ -22,6 +24,9 @@ mongoose.connect(process.env.MONGODB_URI, {
 });
 
 app.use("/api/auth", authRoutes);
+app.use("/api/dashboard", dashboardRoutes);
+app.use("/api/attendance", attendanceRoutes);
+
 
 app.get("/", (req, res) => res.send("Server is running"));
 
