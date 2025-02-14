@@ -32,7 +32,7 @@ const Dashboard = () => {
     };
 
     fetchDashboard();
-  }, [token, navigate, attendance]);
+  }, [token, navigate]);
 
   const handleCheckIn = async () => {
     try {
