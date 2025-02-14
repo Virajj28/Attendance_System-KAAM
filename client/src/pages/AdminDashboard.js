@@ -8,6 +8,11 @@ const AdminDashboard = () => {
   const [checkIn, setCheckIn] = useState("");
   const [checkOut, setCheckOut] = useState("");
   const [message, setMessage] = useState("");
+  const [startDate, setStartDate] = useState("");
+  const [endDate, setEndDate] = useState("");
+  const [department, setDepartment] = useState("");
+  const [employeeId, setEmployeeId] = useState("");
+
   const navigate = useNavigate();
   const token = localStorage.getItem("token");
 
@@ -34,6 +39,72 @@ const AdminDashboard = () => {
 
     fetchAttendance();
   }, [token, navigate]);
+
+  const fetchFilteredAttendance = async () => {
+    try {
+      const query = `startDate=${startDate}&endDate=${endDate}&department=${department}&employeeId=${employeeId}`;
+      const res = await axios.get(
+        `http://localhost:5000/api/attendance/admin/filter?${query}`,
+        {
+          headers: { Authorization: `Bearer ${token}` },
+        }
+      );
+      setAttendance(res.data);
+    } catch (err) {
+      console.error("Error fetching filtered attendance:", err);
+    }
+  };
+
+  const handleDownloadCSV = async () => {
+    try {
+      const token = localStorage.getItem("token");
+      const query = `startDate=${startDate}&endDate=${endDate}&department=${department}&employeeId=${employeeId}`;
+
+      const response = await axios.get(
+        `http://localhost:5000/api/attendance/admin/export/csv?${query}`,
+        {
+          headers: { Authorization: `Bearer ${token}` },
+          responseType: "blob", // Important: Treat response as a file
+        }
+      );
+
+      // Create a download link
+      const url = window.URL.createObjectURL(new Blob([response.data]));
+      const link = document.createElement("a");
+      link.href = url;
+      link.setAttribute("download", "filtered_attendance_report.csv"); // Set file name
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    } catch (err) {
+      console.error("Error downloading CSV:", err);
+    }
+  };
+
+  const handleDownloadPDF = async () => {
+    try {
+      const token = localStorage.getItem("token");
+      const query = `startDate=${startDate}&endDate=${endDate}&department=${department}&employeeId=${employeeId}`;
+
+      const response = await axios.get(
+        `http://localhost:5000/api/attendance/admin/export/pdf?${query}`,
+        {
+          headers: { Authorization: `Bearer ${token}` },
+          responseType: "blob",
+        }
+      );
+
+      const url = window.URL.createObjectURL(new Blob([response.data]));
+      const link = document.createElement("a");
+      link.href = url;
+      link.setAttribute("download", "filtered_attendance_report.pdf");
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    } catch (err) {
+      console.error("Error downloading PDF:", err);
+    }
+  };
 
   const handleEdit = (record) => {
     setEditRecord(record);
@@ -92,63 +163,171 @@ const AdminDashboard = () => {
       <h2 className="text-2xl font-bold">Admin Dashboard</h2>
       {message && <p className="text-red-500">{message}</p>}
 
+      {/* Filter Panel */}
+      <div style={{ marginTop: "16px" }}>
+        <div
+          style={{
+            display: "flex",
+            flexWrap: "wrap",
+            gap: "8px",
+            alignItems: "center",
+          }}
+        >
+          <input
+            type="date"
+            value={startDate}
+            onChange={(e) => setStartDate(e.target.value)}
+            style={{
+              border: "1px solid #D1D5DB",
+              padding: "8px",
+              borderRadius: "6px",
+            }}
+          />
+          <input
+            type="date"
+            value={endDate}
+            onChange={(e) => setEndDate(e.target.value)}
+            style={{
+              border: "1px solid #D1D5DB",
+              padding: "8px",
+              borderRadius: "6px",
+            }}
+          />
+          <input
+            type="text"
+            placeholder="Department"
+            value={department}
+            onChange={(e) => setDepartment(e.target.value)}
+            style={{
+              border: "1px solid #D1D5DB",
+                    padding: "10px 20px",
+                    margin: "0 8px",
+                    borderRadius: "0.375rem",
+                    width: "auto",
+            }}
+          />
+          <input
+            type="text"
+            placeholder="Employee ID"
+            value={employeeId}
+            onChange={(e) => setEmployeeId(e.target.value)}
+            style={{
+              border: "1px solid #D1D5DB",
+                    padding: "10px 20px",
+                    margin: "0 8px",
+                    borderRadius: "0.375rem",
+                    width: "auto",
+            }}
+          />
+          <button
+            onClick={fetchFilteredAttendance}
+            style={{
+              backgroundColor: "#3B82F6",
+              color: "white",
+                    padding: "10px 20px",
+                    margin: "0 8px",
+                    borderRadius: "0.375rem",
+                    cursor: "pointer",
+                    width: "auto",
+            }}
+          >
+            Filter
+          </button>
+        </div>
+
+        <div style={{ marginTop: "12px", display: "flex" }}>
+          <button
+            onClick={handleDownloadCSV}
+            style={{
+              backgroundColor: "#10B981",
+              color: "white",
+              padding: "10px 20px",
+              margin: "0 8px",
+              borderRadius: "0.375rem",
+              cursor: "pointer",
+              width: "auto",
+            }}
+          >
+            Download CSV
+          </button>
+          <button
+            onClick={handleDownloadPDF}
+            style={{
+              backgroundColor: "#10B981",
+              color: "white",
+              padding: "10px 20px",
+              margin: "0 8px",
+              borderRadius: "0.375rem",
+              cursor: "pointer",
+              width: "auto",
+            }}
+          >
+            Download PDF
+          </button>
+        </div>
+      </div>
+
       {/* Attendance List */}
       <ul className="mt-4 bg-white p-4 rounded-lg shadow-lg w-full max-w-2xl">
-        {attendance.map((record) => (
-          <li
-            key={record._id}
-            className="border-b p-4 flex justify-between items-center"
-          >
-            <div>
-              <strong>{record.userId.name}</strong> -{" "}
-              {new Date(record.date).toDateString()} <br />
-              Check-In:{" "}
-              {record.checkIn
-                ? new Date(record.checkIn).toLocaleTimeString()
-                : "N/A"}{" "}
-              | Check-Out:{" "}
-              {record.checkOut
-                ? new Date(record.checkOut).toLocaleTimeString()
-                : "N/A"}
-            </div>
-            <div
-              style={{
-                display: "flex",
-                marginTop: "1rem",
-                marginBottom: "1rem",
-              }}
+        {attendance.length > 0 ? (
+          attendance.map((record) => (
+            <li
+              key={record._id}
+              className="border-b p-4 flex justify-between items-center"
             >
-              <button
+              <div>
+                <strong>{record.userId.name}</strong> -{" "}
+                {new Date(record.date).toDateString()} <br />
+                Check-In:{" "}
+                {record.checkIn
+                  ? new Date(record.checkIn).toLocaleTimeString()
+                  : "N/A"}{" "}
+                | Check-Out:{" "}
+                {record.checkOut
+                  ? new Date(record.checkOut).toLocaleTimeString()
+                  : "N/A"}
+              </div>
+              <div
                 style={{
-                  backgroundColor: "#10B981",
-                  color: "white",
-                  padding: "10px 20px",
-                  margin: "0 8px",
-                  borderRadius: "0.375rem",
-                  cursor: "pointer",
-                  width: "auto",
+                  display: "flex",
+                  marginTop: "1rem",
+                  marginBottom: "1rem",
                 }}
-                onClick={() => handleEdit(record)}
               >
-                Edit
-              </button>
-              <button
-                style={{
-                  backgroundColor: "#F87171",
-                  color: "white",
-                  padding: "10px 20px",
-                  margin: "0 8px",
-                  borderRadius: "0.375rem",
-                  cursor: "pointer",
-                  width: "auto",
-                }}
-                onClick={() => handleDelete(record._id)}
-              >
-                Delete
-              </button>
-            </div>
-          </li>
-        ))}
+                <button
+                  style={{
+                    backgroundColor: "#10B981",
+                    color: "white",
+                    padding: "10px 20px",
+                    margin: "0 8px",
+                    borderRadius: "0.375rem",
+                    cursor: "pointer",
+                    width: "auto",
+                  }}
+                  onClick={() => handleEdit(record)}
+                >
+                  Edit
+                </button>
+                <button
+                  style={{
+                    backgroundColor: "#F87171",
+                    color: "white",
+                    padding: "10px 20px",
+                    margin: "0 8px",
+                    borderRadius: "0.375rem",
+                    cursor: "pointer",
+                    width: "auto",
+                  }}
+                  onClick={() => handleDelete(record._id)}
+                >
+                  Delete
+                </button>
+              </div>
+            </li>
+          ))
+        ) : (
+          <>No data to show...</>
+        )}
       </ul>
 
       {/* Edit Attendance Modal */}

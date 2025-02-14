@@ -1,6 +1,10 @@
 const express = require("express");
+const fs = require("fs");
+const PDFDocument = require("pdfkit");
+const { Parser } = require("json2csv");
 const authMiddleware = require("../middleware/authMiddleware");
 const Attendance = require("../models/Attendance");
+const User = require("../models/User");
 
 const router = express.Router();
 
@@ -121,6 +125,137 @@ router.delete("/admin/delete/:id", authMiddleware, async (req, res) => {
     res.json({ msg: "Attendance record deleted" });
   } catch (err) {
     res.status(500).json({ msg: "Server error" });
+  }
+});
+
+// Get filtered attd for admin
+router.get("/admin/filter", authMiddleware, async (req, res) => {
+  try {
+    if (req.user.role !== "admin") {
+      return res.status(403).json({ msg: "Access denied" });
+    }
+
+    const { startDate, endDate, employeeId, department } = req.query;
+    let query = {};
+
+    if (startDate && endDate) {
+      query.date = { $gte: new Date(startDate), $lte: new Date(endDate) };
+    }
+
+    if (employeeId) {
+      query.userId = employeeId;
+    }
+
+    if (department) {
+      const users = await User.find({ department });
+      const userIds = users.map((user) => user._id);
+      query.userId = { $in: userIds };
+    }
+
+    const attendance = await Attendance.find(query).populate("userId", "name email department");
+    res.json(attendance);
+  } catch (err) {
+    res.status(500).json({ msg: "Server error" });
+  }
+});
+
+// Export Filtered Attendance as CSV
+router.get("/admin/export/csv", authMiddleware, async (req, res) => {
+  try {
+    if (req.user.role !== "admin") {
+      return res.status(403).json({ msg: "Access denied" });
+    }
+
+    const { startDate, endDate, employeeId, department } = req.query;
+    let query = {};
+
+    if (startDate && endDate) {
+      query.date = { $gte: new Date(startDate), $lte: new Date(endDate) };
+    }
+
+    if (employeeId) {
+      query.userId = employeeId;
+    }
+
+    if (department) {
+      const users = await User.find({ department });
+      const userIds = users.map((user) => user._id);
+      query.userId = { $in: userIds };
+    }
+
+    const attendance = await Attendance.find(query).populate("userId", "name email department");
+
+    const data = attendance.map((record) => ({
+      Name: record.userId.name,
+      Email: record.userId.email,
+      Department: record.userId.department || "N/A",
+      Date: new Date(record.date).toDateString(),
+      CheckIn: record.checkIn ? new Date(record.checkIn).toLocaleTimeString() : "N/A",
+      CheckOut: record.checkOut ? new Date(record.checkOut).toLocaleTimeString() : "N/A",
+      WorkHours: record.workHours ? record.workHours.toFixed(2) : "N/A",
+    }));
+
+    const json2csvParser = new Parser();
+    const csv = json2csvParser.parse(data);
+
+    res.header("Content-Type", "text/csv");
+    res.attachment("filtered_attendance_report.csv");
+    res.send(csv);
+  } catch (err) {
+    res.status(500).json({ msg: "Server error" });
+  }
+});
+
+// Export Filtered Attendance as PDF
+router.get("/admin/export/pdf", authMiddleware, async (req, res) => {
+  try {
+    if (req.user.role !== "admin") {
+      return res.status(403).json({ msg: "Access denied" });
+    }
+
+    const { startDate, endDate, employeeId, department } = req.query;
+    let query = {};
+
+    if (startDate && endDate) {
+      query.date = { $gte: new Date(startDate), $lte: new Date(endDate) };
+    }
+
+    if (employeeId) {
+      query.userId = employeeId;
+    }
+
+    if (department) {
+      const users = await User.find({ department });
+      const userIds = users.map((user) => user._id);
+      query.userId = { $in: userIds };
+    }
+
+    const attendance = await Attendance.find(query).populate("userId", "name email department");
+
+    res.setHeader("Content-Type", "application/pdf");
+    res.setHeader("Content-Disposition", "attachment; filename=filtered_attendance_report.pdf");
+
+    const doc = new PDFDocument();
+    doc.pipe(res);
+
+    doc.fontSize(18).text("Filtered Attendance Report", { align: "center" });
+    doc.moveDown();
+
+    attendance.forEach((record) => {
+      doc.fontSize(12).text(`Name: ${record.userId.name}`);
+      doc.text(`Email: ${record.userId.email}`);
+      doc.text(`Department: ${record.userId.department || "N/A"}`);
+      doc.text(`Date: ${new Date(record.date).toDateString()}`);
+      doc.text(`Check-In: ${record.checkIn ? new Date(record.checkIn).toLocaleTimeString() : "N/A"}`);
+      doc.text(`Check-Out: ${record.checkOut ? new Date(record.checkOut).toLocaleTimeString() : "N/A"}`);
+      doc.text(`Work Hours: ${record.workHours ? record.workHours.toFixed(2) : "N/A"}`);
+      doc.moveDown();
+    });
+
+    doc.end();
+  } catch (err) {
+    console.error("Error generating PDF:", err);
+    res.status(500).json({ msg: "Server error generating PDF" });
   }
 });
 
