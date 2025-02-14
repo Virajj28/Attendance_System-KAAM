@@ -25,7 +25,7 @@ const AdminDashboard = () => {
     const fetchAttendance = async () => {
       try {
         const res = await axios.get(
-          "http://localhost:5000/api/attendance/admin",
+          `${process.env.REACT_APP_BACKEND_SERVER_URI}/api/attendance/admin`,
           {
             headers: { Authorization: `Bearer ${token}` },
           }
@@ -44,7 +44,7 @@ const AdminDashboard = () => {
     try {
       const query = `startDate=${startDate}&endDate=${endDate}&department=${department}&employeeId=${employeeId}`;
       const res = await axios.get(
-        `http://localhost:5000/api/attendance/admin/filter?${query}`,
+        `${process.env.REACT_APP_BACKEND_SERVER_URI}/api/attendance/admin/filter?${query}`,
         {
           headers: { Authorization: `Bearer ${token}` },
         }
@@ -61,7 +61,7 @@ const AdminDashboard = () => {
       const query = `startDate=${startDate}&endDate=${endDate}&department=${department}&employeeId=${employeeId}`;
 
       const response = await axios.get(
-        `http://localhost:5000/api/attendance/admin/export/csv?${query}`,
+        `${process.env.REACT_APP_BACKEND_SERVER_URI}/api/attendance/admin/export/csv?${query}`,
         {
           headers: { Authorization: `Bearer ${token}` },
           responseType: "blob", // Important: Treat response as a file
@@ -87,7 +87,7 @@ const AdminDashboard = () => {
       const query = `startDate=${startDate}&endDate=${endDate}&department=${department}&employeeId=${employeeId}`;
 
       const response = await axios.get(
-        `http://localhost:5000/api/attendance/admin/export/pdf?${query}`,
+        `${process.env.REACT_APP_BACKEND_SERVER_URI}/api/attendance/admin/export/pdf?${query}`,
         {
           headers: { Authorization: `Bearer ${token}` },
           responseType: "blob",
@@ -121,7 +121,7 @@ const AdminDashboard = () => {
   const handleUpdate = async () => {
     try {
       const res = await axios.put(
-        `http://localhost:5000/api/attendance/admin/update/${editRecord._id}`,
+        `${process.env.REACT_APP_BACKEND_SERVER_URI}/api/attendance/admin/update/${editRecord._id}`,
         { checkIn, checkOut },
         { headers: { Authorization: `Bearer ${token}` } }
       );
@@ -140,7 +140,7 @@ const AdminDashboard = () => {
   const handleDelete = async (id) => {
     try {
       await axios.delete(
-        `http://localhost:5000/api/attendance/admin/delete/${id}`,
+        `${process.env.REACT_APP_BACKEND_SERVER_URI}/api/attendance/admin/delete/${id}`,
         {
           headers: { Authorization: `Bearer ${token}` },
         }

@@ -36,7 +36,7 @@ function App() {
         })
         .then((subscription) => {
           axios
-            .post("http://localhost:5000/api/subscribe", subscription)
+            .post(`${process.env.REACT_APP_BACKEND_SERVER_URI}/api/subscribe`, subscription)
             .then(() => console.log("Subscribed to push notifications"))
             .catch((err) => console.error("Subscription error:", err));
         });

@@ -18,7 +18,7 @@ const Dashboard = () => {
     const fetchDashboard = async () => {
       try {
         const res = await axios.get(
-          "http://localhost:5000/api/dashboard/employee",
+          `${process.env.REACT_APP_BACKEND_SERVER_URI}/api/dashboard/employee`,
           {
             headers: { Authorization: `Bearer ${token}` },
           }
@@ -37,7 +37,7 @@ const Dashboard = () => {
   const handleCheckIn = async () => {
     try {
       const res = await axios.post(
-        "http://localhost:5000/api/attendance/check-in",
+        `${process.env.REACT_APP_BACKEND_SERVER_URI}/api/attendance/check-in`,
         {},
         {
           headers: { Authorization: `Bearer ${token}` },
@@ -53,7 +53,7 @@ const Dashboard = () => {
   const handleCheckOut = async () => {
     try {
       const res = await axios.post(
-        "http://localhost:5000/api/attendance/check-out",
+        `${process.env.REACT_APP_BACKEND_SERVER_URI}/api/attendance/check-out`,
         {},
         {
           headers: { Authorization: `Bearer ${token}` },

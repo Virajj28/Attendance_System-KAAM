@@ -15,7 +15,7 @@ const Login = ({ setUserRole }) => {
     e.preventDefault();
     try {
       const res = await axios.post(
-        "http://localhost:5000/api/auth/login",
+        `${process.env.REACT_APP_BACKEND_SERVER_URI}/api/auth/login`,
         user
       );
       localStorage.setItem("token", res.data.token);
