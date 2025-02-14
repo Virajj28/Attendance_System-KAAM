@@ -5,6 +5,7 @@ import {
   Navigate,
 } from "react-router-dom";
 import { useEffect, useState } from "react";
+import axios from "axios";
 import Login from "./pages/Login";
 import Signup from "./pages/Signup";
 import Dashboard from "./pages/Dashboard";
@@ -15,11 +16,31 @@ function App() {
 
   useEffect(() => {
     const handleStorageChange = () => {
-      setUserRole(localStorage.getItem("role")); // Update role when storage changes
+      setUserRole(localStorage.getItem("role"));
     };
 
-    window.addEventListener("storage", handleStorageChange); // Listen for storage changes
+    window.addEventListener("storage", handleStorageChange);
     return () => window.removeEventListener("storage", handleStorageChange);
+  }, []);
+
+  useEffect(() => {
+    if ("serviceWorker" in navigator) {
+      navigator.serviceWorker
+        .register("/sw.js")
+        .then((registration) => {
+          console.log("Service Worker registered:", registration);
+          return registration.pushManager.subscribe({
+            userVisibleOnly: true,
+            applicationServerKey: process.env.REACT_APP_VAPID_PUBLIC_KEY,
+          });
+        })
+        .then((subscription) => {
+          axios
+            .post("http://localhost:5000/api/subscribe", subscription)
+            .then(() => console.log("Subscribed to push notifications"))
+            .catch((err) => console.error("Subscription error:", err));
+        });
+    }
   }, []);
 
   return (

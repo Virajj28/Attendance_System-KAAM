@@ -132,7 +132,7 @@ const Dashboard = () => {
                   {record.checkOut
                     ? new Date(record.checkOut).toLocaleTimeString()
                     : "N/A"}
-                  <p>Completed Work Hours: {record?.workHours || "--"}</p>
+                  <p>Completed Work Hours: {Number(record?.workHours).toFixed(2) || "--"}</p>
                 </div>
               </li>
             ))}
