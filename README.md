@@ -36,3 +36,7 @@ Backend Key features:
 -Report generation (PDF, CSV)
 -Push notifications (Web-Push, Service Workers)
 -Scheduled jobs (node-cron for reminders)
+
+
+Attendance-app Working Walkthrough:
+https://www.awesomescreenshot.com/video/36617231?key=8a8106e56b486a1164944cdb5a7ec2e1
