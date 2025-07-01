@@ -10,7 +10,9 @@ const AdminDashboard = () => {
   const [message, setMessage] = useState("");
   const [startDate, setStartDate] = useState("");
   const [endDate, setEndDate] = useState("");
+  // eslint-disable-next-line
   const [department, setDepartment] = useState("");
+  // eslint-disable-next-line
   const [employeeId, setEmployeeId] = useState("");
 
   const navigate = useNavigate();
@@ -193,32 +195,6 @@ const AdminDashboard = () => {
               borderRadius: "6px",
             }}
           />
-          <input
-            type="text"
-            placeholder="Department"
-            value={department}
-            onChange={(e) => setDepartment(e.target.value)}
-            style={{
-              border: "1px solid #D1D5DB",
-                    padding: "10px 20px",
-                    margin: "0 8px",
-                    borderRadius: "0.375rem",
-                    width: "auto",
-            }}
-          />
-          <input
-            type="text"
-            placeholder="Employee ID"
-            value={employeeId}
-            onChange={(e) => setEmployeeId(e.target.value)}
-            style={{
-              border: "1px solid #D1D5DB",
-                    padding: "10px 20px",
-                    margin: "0 8px",
-                    borderRadius: "0.375rem",
-                    width: "auto",
-            }}
-          />
           <button
             onClick={fetchFilteredAttendance}
             style={{
@@ -277,7 +253,9 @@ const AdminDashboard = () => {
             >
               <div>
                 <strong>{record.userId.name}</strong> -{" "}
-                {new Date(record.date).toDateString()} <br />
+                {new Date(record.date).toDateString()}
+                  {" "}- {" "}<span>Completed Work Hours: {Number(record?.workHours).toFixed(2) || "--"}</span>
+                <br />
                 Check-In:{" "}
                 {record.checkIn
                   ? new Date(record.checkIn).toLocaleTimeString()
