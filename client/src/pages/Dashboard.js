@@ -50,21 +50,46 @@ const Dashboard = () => {
     }
   };
 
-  const handleCheckOut = async () => {
+  const handleCheckOut = async (checkedIn) => {
     try {
-      const res = await axios.post(
-        `${process.env.REACT_APP_BACKEND_SERVER_URI}/api/attendance/check-out`,
-        {},
-        {
-          headers: { Authorization: `Bearer ${token}` },
-        }
-      );
-      setMessage(res.data.msg);
-      setAttendance(
-        attendance.map((record) =>
-          record._id === res.data.attendance._id ? res.data.attendance : record
-        )
-      );
+      console.log("Checked In Time:", checkedIn);
+
+      // react-dom-client.development.js:5841 Uncaught Error: Too many re-renders. React limits the number of renders to prevent an infinite loop.
+      // Errors for this block of code:
+      // 1. The function handleCheckOut is being called immediately instead of being passed as
+      //    an event handler. This causes the function to execute immediately when the component renders,
+      //    leading to an infinite loop of re-renders.
+
+      //checkIn should be more than 24 hours ago checkedIn is 2025-07-01T07:02:49.465Z
+      const checkInDate = new Date(checkedIn);
+      const currentDate = new Date();
+
+      // Check if the check-in time is more than 24 hours ago
+      if (currentDate - checkInDate < 24 * 60 * 60 * 1000) {
+        setMessage("You can only check out after 24 hours of checking in.");
+        return;
+      }
+
+      if (currentDate - checkInDate < 24 * 60 * 60 * 1000) {
+        setMessage("You can only check out after 24 hours of checking in.");
+        return;
+      } else {
+        const res = await axios.post(
+          `${process.env.REACT_APP_BACKEND_SERVER_URI}/api/attendance/check-out`,
+          {},
+          {
+            headers: { Authorization: `Bearer ${token}` },
+          }
+        );
+        setMessage(res.data.msg);
+        setAttendance(
+          attendance.map((record) =>
+            record._id === res.data.attendance._id
+              ? res.data.attendance
+              : record
+          )
+        );
+      }
     } catch (err) {
       setMessage(err.response?.data?.msg || "Check-out failed.");
     }
@@ -103,7 +128,7 @@ const Dashboard = () => {
             >
               Check-In
             </button>
-            <button
+            {/* <button
               style={{
                 backgroundColor: "#F87171",
                 color: "white",
@@ -116,7 +141,7 @@ const Dashboard = () => {
               onClick={handleCheckOut}
             >
               Check-Out
-            </button>
+            </button> */}
           </div>
 
           <h3 className="text-xl mt-4">Your Attendance History</h3>
@@ -132,7 +157,26 @@ const Dashboard = () => {
                   {record.checkOut
                     ? new Date(record.checkOut).toLocaleTimeString()
                     : "N/A"}
-                  <p>Completed Work Hours: {Number(record?.workHours).toFixed(2) || "--"}</p>
+                  <p>
+                    Completed Work Hours:{" "}
+                    {Number(record?.workHours).toFixed(2) || "--"}
+                  </p>
+                  <button
+                    style={{
+                      backgroundColor: "#F87171",
+                      color: "white",
+                      padding: "10px 20px",
+                      margin: "0 8px",
+                      borderRadius: "0.375rem",
+                      cursor: "pointer",
+                      width: "auto",
+                    }}
+                    onClick={() => {
+                      handleCheckOut(record.checkIn);
+                    }}
+                  >
+                    Check-Out
+                  </button>
                 </div>
               </li>
             ))}
